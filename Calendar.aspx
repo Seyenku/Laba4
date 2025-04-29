@@ -16,15 +16,14 @@
                         <h3 class="mb-0 h5"><i class="fas fa-calendar-week me-2"></i>Выберите дату</h3>
                     </div>
                     <div class="card-body p-0">
-                        <!-- Calendar Control with improved styling -->
                         <asp:Calendar ID="EventCalendar" runat="server" Width="100%" BackColor="White" 
                             BorderColor="#e9ecef" CellPadding="8" DayNameFormat="Short" 
-                            Font-Names="'Segoe UI', Arial, sans-serif" Font-Size="18pt" ForeColor="#333" Height="550px" 
+                            Font-Names="'Segoe UI', Arial, sans-serif" Font-Size="12pt" ForeColor="#333" Height="550px" 
                             OnDayRender="EventCalendar_DayRender" OnSelectionChanged="EventCalendar_SelectionChanged"
                             FirstDayOfWeek="Monday" NextPrevFormat="FullMonth" CssClass="modern-calendar" 
                             SelectionMode="Day">
                             <DayHeaderStyle BackColor="#f8f9fa" Font-Bold="True" Font-Size="11pt" CssClass="day-header" />
-                            <NextPrevStyle Font-Bold="True" Font-Size="14pt" ForeColor="White" VerticalAlign="Middle" CssClass="next-prev" />
+                            <NextPrevStyle Font-Bold="True" Font-Size="13pt" ForeColor="White" VerticalAlign="Middle" CssClass="next-prev" />
                             <OtherMonthDayStyle ForeColor="#adb5bd" />
                             <SelectedDayStyle BackColor="#2c73d2" Font-Bold="True" ForeColor="White" CssClass="selected-day" />
                             <SelectorStyle BackColor="#f8f9fa" Font-Bold="True" Font-Size="12pt" ForeColor="#333" />
@@ -37,7 +36,6 @@
             </div>
         </div>
 
-        <!-- Event Details Panel (initially hidden) -->
         <div class="row mt-4">
             <div class="col-md-12">
                 <asp:Panel ID="EventDetailsPanel" runat="server" Visible="false" CssClass="card shadow-sm rounded-3 overflow-hidden">
@@ -138,31 +136,23 @@
     </main>
 
     <script type="text/javascript">
-        // Делаем всю ячейку календаря кликабельной с помощью делегирования событий
         document.addEventListener('DOMContentLoaded', function() {
-            // Находим таблицу календаря
             var calendar = document.querySelector('.modern-calendar');
             if (!calendar) return;
             
-            // Используем делегирование событий для обработки кликов на всей таблице
             calendar.addEventListener('click', function(e) {
-                // Проверяем, что клик был на ячейке (td)
                 var cell = e.target.closest('td');
                 if (!cell) return;
                 
-                // Проверяем, что ячейка содержит ссылку (число даты) и клик был не на самой ссылке
                 var link = cell.querySelector('a');
                 if (link && e.target !== link) {
-                    // Программно вызываем клик по ссылке
                     e.preventDefault();
                     link.click();
                 }
             });
             
-            // Добавляем обработчик событий для обновления после асинхронных запросов
             if (typeof Sys !== 'undefined' && Sys.WebForms) {
                 Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function() {
-                    // После обновления страницы убеждаемся, что стили применены корректно
                     var cells = document.querySelectorAll('.modern-calendar td');
                     cells.forEach(function(cell) {
                         if (cell.querySelector('a')) {
@@ -175,7 +165,6 @@
     </script>
 
     <style>
-        /* Improved styles for Calendar page */
         .bg-gradient-primary {
             background: linear-gradient(135deg, #3498db, #1a5276);
         }
@@ -211,10 +200,10 @@
             z-index: 1;
         }
         
-        /* Modern calendar styling */
         .modern-calendar {
             border-spacing: 5px;
             border-collapse: separate;
+            overflow: hidden;
         }
         
         .modern-calendar td {
@@ -222,6 +211,7 @@
             transition: all 0.2s ease;
             cursor: pointer;
             position: relative;
+            transform-origin: center center;
         }
         
         .modern-calendar td a {
@@ -236,7 +226,7 @@
         
         .modern-calendar td:hover {
             background-color: #e9ecef;
-            transform: scale(1.05);
+            transform: scale(1.01);
         }
         
         .modern-calendar td.has-events {
@@ -247,7 +237,7 @@
         
         .modern-calendar td.has-events:hover {
             background-color: #c3e6cb;
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         
         .day-header {
@@ -264,9 +254,8 @@
         
         .selected-day {
             border-radius: 5px;
-            transform: scale(1.08) !important;
+            transform: scale(1.03) !important;
             box-shadow: 0 5px 20px rgba(44, 115, 210, 0.4) !important;
-            border: 2px solid #1c5eb9 !important;
             position: relative;
             z-index: 3;
             animation: selected-pulse 2s infinite alternate;
@@ -292,7 +281,6 @@
             border-radius: 5px;
         }
         
-        /* Event card styling */
         .hover-card {
             transition: all 0.3s ease;
         }
@@ -302,7 +290,6 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
         }
         
-        /* Button styling */
         .hover-btn {
             transition: all 0.3s ease;
             position: relative;
@@ -315,7 +302,6 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
-        /* Fix for event count badges */
         .event-count {
             position: absolute;
             top: 5px;
@@ -337,7 +323,7 @@
         
         .today-day {
             border-radius: 5px;
-            transform: scale(1.05);
+            transform: scale(1.02);
             box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
         }
         
@@ -346,7 +332,6 @@
             font-weight: bold;
         }
         
-        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .hero-section h2 {
                 font-size: 1.8rem;
@@ -389,7 +374,6 @@
             }
         }
         
-        /* Стили для очень маленьких экранов */
         @media (max-width: 576px) {
             .hero-section {
                 padding: 1.5rem 0 !important;

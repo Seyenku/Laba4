@@ -40,7 +40,7 @@
                         </div>
                         <div class="form-group row mb-3">
                             <div class="col-sm-9 offset-sm-3">
-                                <asp:CheckBox ID="RememberMeCheckBox" runat="server" Text="Запомнить меня" />
+                                <asp:CheckBox ID="RememberMeCheckBox" runat="server" Text="Запомнить меня" CssClass="remember-me-checkbox" />
                             </div>
                         </div>
                         <div class="form-group row">
@@ -79,7 +79,6 @@
     </main>
 
     <style>
-        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .col-sm-3 {
                 text-align: left;
@@ -120,7 +119,6 @@
             }
         }
         
-        /* Стили для очень маленьких экранов */
         @media (max-width: 576px) {
             .col-md-6.offset-md-3 {
                 padding-left: 5px;
@@ -134,6 +132,23 @@
             h2 {
                 font-size: 1.5rem;
             }
+        }
+        
+        .remember-me-checkbox {
+            display: flex;
+            align-items: center;
+        }
+        
+        .remember-me-checkbox input[type="checkbox"] {
+            margin-right: 8px;
+            position: relative;
+            top: 0;
+        }
+        
+        .remember-me-checkbox label {
+            margin-bottom: 0;
+            line-height: 1.5;
+            display: inline-block;
         }
     </style>
 </asp:Content> 

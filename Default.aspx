@@ -288,7 +288,6 @@
             background-color: #f8f9fa;
         }
         
-        /* Добавляем адаптивность для мобильных устройств */
         @media (max-width: 768px) {
             .hero-section h1 {
                 font-size: 1.8rem;
@@ -331,7 +330,6 @@
             }
         }
         
-        /* Стили для очень маленьких экранов */
         @media (max-width: 576px) {
             .hero-section {
                 padding: 1.5rem 0 !important;
@@ -358,19 +356,15 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
-            // Инициализация информационных панелей - показываем их сразу
             $('.hover-card').addClass('active-permanent');
             
-            // Инициализация элементов событий (с анимацией)
             var eventElements = $('.event-card');
             eventElements.css('opacity', '0').css('transform', 'translateY(20px)');
             
-            // Показываем первоначальные события с задержкой
             setTimeout(function() {
                 eventElements.addClass('active');
             }, 300);
             
-            // Анимация при прокрутке - события исчезают и появляются
             function animateOnScroll() {
                 var events = document.querySelectorAll('.event-card');
                 
@@ -379,11 +373,9 @@
                     var elementTop = events[i].getBoundingClientRect().top;
                     var elementBottom = events[i].getBoundingClientRect().bottom;
                     
-                    // Элемент входит в зону видимости снизу
                     if (elementTop < windowHeight - 100 && elementTop > 0) {
                         events[i].classList.add('active');
                     } 
-                    // Элемент выходит из зоны видимости сверху или снизу
                     else if (elementTop < 0 || elementTop > windowHeight) {
                         events[i].classList.remove('active');
                     }

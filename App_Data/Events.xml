@@ -52,6 +52,8 @@
     <EndDate>2025-05-02T20:16:00.0000000</EndDate>
     <Location>пикиыкпцуки</Location>
     <MaxAttendees>50</MaxAttendees>
-    <Attendees />
+    <Attendees>
+      <Student ID="1234" Name="ZZZZ" Email="arasr@sgsgs.sdf" RegistrationDate="2025-04-29T21:03:50.8486482+03:00" />
+    </Attendees>
   </Event>
 </Events>
