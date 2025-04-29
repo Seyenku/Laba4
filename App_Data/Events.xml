@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Events>
+  <!-- Example event -->
+  <Event>
+    <ID>7bdec5d6</ID>
+    <Title>тест</Title>
+    <Description>asdfarghnar</Description>
+    <StartDate>2025-04-30T18:43:00.0000000</StartDate>
+    <EndDate>2025-05-01T19:43:00.0000000</EndDate>
+    <Location>там</Location>
+    <MaxAttendees>50</MaxAttendees>
+    <Attendees>
+      <Student ID="1234" Name="ZZZZ" Email="arasr@sgsgs.sdf" RegistrationDate="2025-04-29T18:52:05.7901549+03:00" />
+      <Student ID="1231231" Name="ZZZZ" Email="arasr@sgsgs.sdf" RegistrationDate="2025-04-29T18:53:03.6650229+03:00" />
+    </Attendees>
+  </Event>
+</Events>

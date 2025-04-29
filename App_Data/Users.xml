@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Users>
+  <!-- Зарегистрированные пользователи будут добавляться здесь -->
+  <User>
+    <ID>463fc252-7c37-41cc-9734-b4e638319c53</ID>
+    <Username>student</Username>
+    <Email>arasr@sgsgs.sdf</Email>
+    <Password>stu123</Password>
+    <FullName>ZZZZ</FullName>
+    <StudentId>1234</StudentId>
+    <RegistrationDate>2025-04-29T18:51:55.3802157+03:00</RegistrationDate>
+  </User>
+</Users>
