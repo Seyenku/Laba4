@@ -73,7 +73,6 @@
                                                 <p class="mb-0"><i class="fas fa-calendar-day me-2"></i> <%# DateTime.Parse(Eval("StartDate").ToString()).ToString("dddd, d MMMM yyyy", new System.Globalization.CultureInfo("ru-RU")) %></p>
                                                 <p class="mb-0"><i class="fas fa-clock me-2"></i> <%# DateTime.Parse(Eval("StartDate").ToString()).ToShortTimeString() %> - <%# DateTime.Parse(Eval("EndDate").ToString()).ToShortTimeString() %></p>
                                                 <p class="mb-0"><i class="fas fa-map-marker-alt me-2"></i> <%# Eval("Location") %></p>
-                                                <p class="mb-0"><i class="fas fa-tag me-2"></i> <%# Eval("Category") %></p>
                                             </div>
                                             <div class="mt-3">
                                                 <span class="badge bg-light text-primary border border-primary attendees-badge">
@@ -86,7 +85,7 @@
                                             <asp:LinkButton ID="SelectEventButton" runat="server" 
                                                 CssClass="btn btn-primary btn-hover-effect" 
                                                 CommandName="SelectEvent" 
-                                                CommandArgument='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("yyyy-MM-dd") %>'>
+                                                CommandArgument='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("yyyy-MM-dd") + "|" + Eval("ID") %>'>
                                                 <i class="fas fa-info-circle me-2"></i> Подробнее
                                             </asp:LinkButton>
                                         </div>
@@ -143,7 +142,7 @@
         
         .event-card {
             transition: all 0.3s ease;
-            cursor: pointer;
+            cursor: default;
             position: relative;
             overflow: hidden;
             background-color: #fff;
@@ -288,50 +287,123 @@
             transform: scale(1.05);
             background-color: #f8f9fa;
         }
+        
+        /* Добавляем адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero-section p.lead {
+                font-size: 1rem;
+            }
+            
+            .event-item {
+                padding: 1rem !important;
+            }
+            
+            .event-item h4 {
+                font-size: 1.2rem;
+            }
+            
+            .event-item .text-muted {
+                font-size: 0.9rem;
+            }
+            
+            .event-item .d-flex {
+                flex-direction: column;
+                gap: 0.5rem !important;
+            }
+            
+            .event-item .col-md-3 {
+                text-align: left !important;
+                margin-top: 1rem;
+            }
+            
+            .event-item .btn {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+            
+            .attendees-badge {
+                margin-top: 0.5rem;
+                display: inline-block;
+            }
+        }
+        
+        /* Стили для очень маленьких экранов */
+        @media (max-width: 576px) {
+            .hero-section {
+                padding: 1.5rem 0 !important;
+            }
+            
+            .hero-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card-header h3, .card-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .card-body {
+                padding: 1rem !important;
+            }
+            
+            .badge {
+                padding: 0.3rem 0.5rem !important;
+                font-size: 0.7rem !important;
+            }
+        }
     </style>
 
     <script type="text/javascript">
         $(document).ready(function() {
-            // Клик по карточке события
-            $('.event-card').click(function(e) {
-                // Only trigger if not clicking the button itself
-                if (!$(e.target).closest('.btn').length) {
-                    var eventDate = $(this).data('event-date');
-                    window.location.href = 'Calendar.aspx?date=' + eventDate;
-                }
-            });
+            // Инициализация информационных панелей - показываем их сразу
+            $('.hover-card').addClass('active-permanent');
             
-            // Плавное появление элементов при загрузке страницы
-            $('.event-card, .hover-card').css('opacity', '0').css('transform', 'translateY(20px)');
+            // Инициализация элементов событий (с анимацией)
+            var eventElements = $('.event-card');
+            eventElements.css('opacity', '0').css('transform', 'translateY(20px)');
             
+            // Показываем первоначальные события с задержкой
             setTimeout(function() {
-                $('.event-card, .hover-card').addClass('active');
+                eventElements.addClass('active');
             }, 300);
             
-            // Добавляем класс active при прокрутке, но не удаляем его
-            function revealOnScroll() {
-                var reveals = document.querySelectorAll('.event-card:not(.active), .hover-card:not(.active)');
+            // Анимация при прокрутке - события исчезают и появляются
+            function animateOnScroll() {
+                var events = document.querySelectorAll('.event-card');
                 
-                for (var i = 0; i < reveals.length; i++) {
+                for (var i = 0; i < events.length; i++) {
                     var windowHeight = window.innerHeight;
-                    var elementTop = reveals[i].getBoundingClientRect().top;
-                    var elementVisible = 150;
+                    var elementTop = events[i].getBoundingClientRect().top;
+                    var elementBottom = events[i].getBoundingClientRect().bottom;
                     
-                    if (elementTop < windowHeight - elementVisible) {
-                        reveals[i].classList.add('active');
+                    // Элемент входит в зону видимости снизу
+                    if (elementTop < windowHeight - 100 && elementTop > 0) {
+                        events[i].classList.add('active');
+                    } 
+                    // Элемент выходит из зоны видимости сверху или снизу
+                    else if (elementTop < 0 || elementTop > windowHeight) {
+                        events[i].classList.remove('active');
                     }
                 }
             }
             
-            window.addEventListener('scroll', revealOnScroll);
+            window.addEventListener('scroll', animateOnScroll);
         });
     </script>
     
     <style>
-        .event-card.active, .hover-card.active {
+        .event-card.active {
             opacity: 1 !important;
             transform: translateY(0) !important;
-            transition: all 0.8s ease;
+            transition: all 0.5s ease;
+        }
+        
+        .hover-card.active-permanent {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
         }
     </style>
 

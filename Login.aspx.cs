@@ -57,14 +57,25 @@ namespace Laba4
                 
                 Response.Cookies.Add(authCookie);
 
-                if (role == "Admin")
+                // Получаем ReturnUrl из строки запроса
+                string returnUrl = Request.QueryString["ReturnUrl"];
+                
+                if (!string.IsNullOrEmpty(returnUrl))
                 {
-                    string returnUrl = Request.QueryString["ReturnUrl"];
-                    Response.Redirect(returnUrl ?? "~/AdminCalendar.aspx");
+                    // Если ReturnUrl указан, перенаправляем на него
+                    Response.Redirect(returnUrl);
                 }
                 else
                 {
-                    Response.Redirect("~/Calendar.aspx");
+                    // Если ReturnUrl не указан, перенаправляем на страницу по умолчанию в зависимости от роли
+                    if (role == "Admin")
+                    {
+                        Response.Redirect("~/AdminCalendar.aspx");
+                    }
+                    else
+                    {
+                        Response.Redirect("~/Calendar.aspx");
+                    }
                 }
             }
             else

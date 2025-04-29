@@ -77,4 +77,63 @@
             </div>
         </div>
     </main>
+
+    <style>
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .col-sm-3 {
+                text-align: left;
+                margin-bottom: 0.5rem;
+            }
+            
+            .offset-sm-3 {
+                margin-left: 0;
+            }
+            
+            .form-group.row {
+                margin-bottom: 1rem !important;
+            }
+            
+            .btn {
+                display: block;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .btn + .btn, 
+            .btn + a.btn {
+                margin-left: 0 !important;
+            }
+            
+            h2 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+            
+            p.lead {
+                text-align: center;
+            }
+            
+            .card-header h3, 
+            .card-header h5 {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Стили для очень маленьких экранов */
+        @media (max-width: 576px) {
+            .col-md-6.offset-md-3 {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
 </asp:Content> 

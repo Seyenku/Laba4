@@ -80,8 +80,23 @@ namespace Laba4
         {
             if (e.CommandName == "SelectEvent")
             {
-                string eventDate = e.CommandArgument.ToString();
-                Response.Redirect($"Calendar.aspx?date={eventDate}");
+                string[] args = e.CommandArgument.ToString().Split('|');
+                string eventDate = args[0];
+                string eventId = args[1];
+                
+                // Проверяем, авторизован ли пользователь
+                if (Request.IsAuthenticated)
+                {
+                    // Пользователь авторизован, перенаправляем на страницу календаря
+                    Response.Redirect($"Calendar.aspx?date={eventDate}&eventId={eventId}&register=true");
+                }
+                else
+                {
+                    // Пользователь не авторизован, перенаправляем на страницу входа
+                    // Добавляем ReturnUrl, чтобы после входа вернуться на страницу календаря
+                    string returnUrl = $"Calendar.aspx?date={eventDate}&eventId={eventId}&register=true";
+                    Response.Redirect($"Login.aspx?ReturnUrl={Server.UrlEncode(returnUrl)}");
+                }
             }
         }
         

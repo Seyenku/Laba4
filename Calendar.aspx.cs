@@ -53,53 +53,49 @@ namespace Laba4
 
             if (!IsPostBack)
             {
-                EventCalendar.VisibleDate = DateTime.Today;
-            }
-        }
-
-        protected void EventCalendar_DayRender(object sender, DayRenderEventArgs e)
-        {
-            if (eventsDoc != null)
-            {
-                var eventsOnDay = eventsDoc.Descendants("Event")
-                    .Where(ev => 
-                        DateTime.Parse(ev.Element("StartDate").Value).Date == e.Day.Date)
-                    .ToList();
-
-                if (eventsOnDay.Any())
+                // Получаем параметры из URL
+                string dateParam = Request.QueryString["date"];
+                string eventIdParam = Request.QueryString["eventId"];
+                bool registerParam = Request.QueryString["register"] == "true";
+                
+                if (!string.IsNullOrEmpty(dateParam))
                 {
-                    e.Cell.BackColor = ColorTranslator.FromHtml("#d4edda");
-                    
-                    int eventCount = eventsOnDay.Count;
-                    e.Cell.Controls.Add(new LiteralControl("<div class='event-count'>" + eventCount + "</div>"));
-                    
-                    if (eventsOnDay.Count == 1)
+                    // Устанавливаем дату календаря и выбираем её
+                    DateTime selectedDate;
+                    if (DateTime.TryParse(dateParam, out selectedDate))
                     {
-                        var firstEvent = eventsOnDay.First();
-                        string id = firstEvent.Element("ID").Value;
-                        string title = firstEvent.Element("Title").Value;
-                        string desc = firstEvent.Element("Description").Value;
-                        string startTime = DateTime.Parse(firstEvent.Element("StartDate").Value).ToShortTimeString();
-                        string endTime = DateTime.Parse(firstEvent.Element("EndDate").Value).ToShortTimeString();
-                        string location = firstEvent.Element("Location").Value;
-                        int maxAttendees = int.Parse(firstEvent.Element("MaxAttendees").Value);
-                        int currentAttendees = firstEvent.Element("Attendees")?.Elements("Student")?.Count() ?? 0;
-
-                        string script = $"showEventDetails('{id}', '{title}', '{desc}', '{startTime}', '{endTime}', '{location}', {maxAttendees}, {currentAttendees});";
-                        e.Cell.Attributes["onclick"] = "javascript:" + script;
-                        e.Cell.Attributes["style"] = "cursor: pointer;";
+                        EventCalendar.VisibleDate = selectedDate;
+                        EventCalendar.SelectedDate = selectedDate;
+                        
+                        // Отображаем события на выбранную дату
+                        SelectedDateLabel.Text = selectedDate.ToLongDateString();
+                        LoadEventsForSelectedDate(selectedDate);
+                        
+                        // Обязательно делаем панель с деталями события видимой
+                        EventDetailsPanel.Visible = true;
+                        
+                        // Автоматически открываем регистрацию для указанного события
+                        if (registerParam && !string.IsNullOrEmpty(eventIdParam))
+                        {
+                            // Прокручиваем страницу к форме регистрации
+                            ScriptManager.RegisterStartupScript(this, GetType(), "scrollToEvent", 
+                                $"setTimeout(function() {{ document.getElementById('event-{eventIdParam}').scrollIntoView({{ behavior: 'smooth', block: 'center' }}); }}, 500);", 
+                                true);
+                        }
                     }
+                }
+                else
+                {
+                    EventCalendar.VisibleDate = DateTime.Today;
                 }
             }
         }
 
-        protected void EventCalendar_SelectionChanged(object sender, EventArgs e)
+        private void LoadEventsForSelectedDate(DateTime selectedDate)
         {
-            SelectedDateLabel.Text = EventCalendar.SelectedDate.ToLongDateString();
-            
             var eventsOnSelectedDay = eventsDoc.Descendants("Event")
                 .Where(ev => 
-                    DateTime.Parse(ev.Element("StartDate").Value).Date == EventCalendar.SelectedDate.Date)
+                    DateTime.Parse(ev.Element("StartDate").Value).Date == selectedDate.Date)
                 .Select(ev => new
                 {
                     ID = ev.Element("ID").Value,
@@ -121,6 +117,22 @@ namespace Laba4
                 
                 // Заполняем поля формы регистрации данными пользователя
                 FillRegistrationForms();
+                
+                // Проверяем, передан ли конкретный идентификатор события в URL
+                string eventIdParam = Request.QueryString["eventId"];
+                if (!string.IsNullOrEmpty(eventIdParam))
+                {
+                    // Добавляем скрипт для выделения выбранного события
+                    ScriptManager.RegisterStartupScript(this, GetType(), "highlightEvent", 
+                        $"setTimeout(function() {{ " +
+                        $"  const eventElement = document.getElementById('event-{eventIdParam}'); " +
+                        $"  if(eventElement) {{ " +
+                        $"    eventElement.classList.add('bg-light', 'border-primary'); " +
+                        $"    eventElement.scrollIntoView({{ behavior: 'smooth', block: 'center' }}); " +
+                        $"  }} " +
+                        $"}}, 500);", 
+                        true);
+                }
             }
             else
             {
@@ -129,6 +141,51 @@ namespace Laba4
                 EventsRepeater.DataSource = null;
                 EventsRepeater.DataBind();
             }
+        }
+
+        protected void EventCalendar_DayRender(object sender, DayRenderEventArgs e)
+        {
+            if (eventsDoc != null)
+            {
+                var eventsOnDay = eventsDoc.Descendants("Event")
+                    .Where(ev => 
+                        DateTime.Parse(ev.Element("StartDate").Value).Date == e.Day.Date)
+                    .ToList();
+
+                if (eventsOnDay.Any())
+                {
+                    // Отмечаем дни с событиями специальным цветом
+                    e.Cell.BackColor = ColorTranslator.FromHtml("#d4edda");
+                    
+                    // Показываем количество событий
+                    int eventCount = eventsOnDay.Count;
+                    e.Cell.Controls.Add(new LiteralControl("<div class='event-count'>" + eventCount + "</div>"));
+                    
+                    // Добавляем CSS класс для дополнительных стилей
+                    e.Cell.CssClass += " has-events";
+                    
+                    // Добавляем подсказку
+                    e.Cell.ToolTip = $"События ({eventCount}): Нажмите для просмотра";
+                }
+                else
+                {
+                    // Для дней без событий тоже добавляем подсказку
+                    e.Cell.ToolTip = "Нет событий в этот день";
+                }
+                
+                // Добавляем стиль курсора для всех ячеек
+                e.Cell.Attributes["style"] = e.Cell.Attributes["style"] + "; cursor: pointer;";
+                
+                // Делаем ячейку кликабельной с помощью селектора календаря ASP.NET
+                // ВАЖНО: не нужно привязывать обработчик событий JavaScript напрямую,
+                // встроенный селектор дат ASP.NET Calendar сам обрабатывает клики
+            }
+        }
+
+        protected void EventCalendar_SelectionChanged(object sender, EventArgs e)
+        {
+            SelectedDateLabel.Text = EventCalendar.SelectedDate.ToLongDateString();
+            LoadEventsForSelectedDate(EventCalendar.SelectedDate);
         }
         
         private void FillRegistrationForms()

@@ -287,4 +287,93 @@
             }
         }
     </script>
+
+    <style>
+        /* Адаптивность для администраторской панели */
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+            
+            p.lead {
+                text-align: center;
+            }
+            
+            .card-header h3 {
+                font-size: 1.2rem;
+            }
+            
+            .col-sm-2 {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .col-sm-10 {
+                width: 100%;
+            }
+            
+            .offset-sm-2 {
+                margin-left: 0;
+            }
+            
+            .form-group.row {
+                margin-bottom: 1rem !important;
+            }
+            
+            .btn {
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Улучшение отображения таблицы для мобильных устройств */
+            .table-responsive {
+                border: 0;
+            }
+            
+            .table th, .table td {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+            
+            /* Адаптация кнопок в таблице */
+            .btn-sm {
+                margin: 0.2rem;
+                padding: 0.25rem 0.4rem;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Стили для очень маленьких экранов */
+        @media (max-width: 576px) {
+            .card-body {
+                padding: 1rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .table-responsive {
+                white-space: nowrap;
+            }
+            
+            /* Скрываем некоторые колонки на маленьких экранах */
+            .table th:nth-child(1), 
+            .table td:nth-child(1),
+            .table th:nth-child(4), 
+            .table td:nth-child(4) {
+                display: none;
+            }
+            
+            /* Модальное окно для маленьких экранов */
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: 95%;
+            }
+            
+            .modal-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
 </asp:Content> 

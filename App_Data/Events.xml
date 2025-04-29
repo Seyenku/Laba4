@@ -14,4 +14,44 @@
       <Student ID="1231231" Name="ZZZZ" Email="arasr@sgsgs.sdf" RegistrationDate="2025-04-29T18:53:03.6650229+03:00" />
     </Attendees>
   </Event>
+  <Event>
+    <ID>f3cd9451</ID>
+    <Title>ывафиы</Title>
+    <Description>фываифыи</Description>
+    <StartDate>2025-04-29T19:15:00.0000000</StartDate>
+    <EndDate>2025-04-29T20:15:00.0000000</EndDate>
+    <Location>фываиывфи</Location>
+    <MaxAttendees>50</MaxAttendees>
+    <Attendees />
+  </Event>
+  <Event>
+    <ID>de902e02</ID>
+    <Title>ыфвамфым</Title>
+    <Description>фывамыфм</Description>
+    <StartDate>2025-04-29T19:15:00.0000000</StartDate>
+    <EndDate>2025-04-29T20:15:00.0000000</EndDate>
+    <Location>укеицук</Location>
+    <MaxAttendees>50</MaxAttendees>
+    <Attendees />
+  </Event>
+  <Event>
+    <ID>3b0ed835</ID>
+    <Title>цнкцеитнц</Title>
+    <Description>выпаивы</Description>
+    <StartDate>2025-05-01T19:16:00.0000000</StartDate>
+    <EndDate>2025-05-02T20:16:00.0000000</EndDate>
+    <Location>вапив</Location>
+    <MaxAttendees>50</MaxAttendees>
+    <Attendees />
+  </Event>
+  <Event>
+    <ID>e93541e7</ID>
+    <Title>выапиыви</Title>
+    <Description>пу5иеуы</Description>
+    <StartDate>2025-05-01T19:16:00.0000000</StartDate>
+    <EndDate>2025-05-02T20:16:00.0000000</EndDate>
+    <Location>пикиыкпцуки</Location>
+    <MaxAttendees>50</MaxAttendees>
+    <Attendees />
+  </Event>
 </Events>

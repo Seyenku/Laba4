@@ -17,7 +17,40 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
     <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    
+    <style>
+        /* Добавляем базовые стили для мобильных устройств */
+        @media (max-width: 768px) {
+            .navbar-collapse {
+                padding: 1rem;
+                background-color: #343a40;
+                border-radius: 0.5rem;
+                margin-top: 0.5rem;
+            }
+            
+            .navbar-nav {
+                margin-bottom: 1rem;
+            }
+            
+            .body-content {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            
+            footer {
+                text-align: center;
+                padding: 1rem 0;
+            }
+        }
+        
+        /* Модификации для более мелких экранов */
+        @media (max-width: 576px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
     <form runat="server">
@@ -42,9 +75,11 @@
 
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
             <div class="container">
-                <a class="navbar-brand" runat="server" href="~/">Календарь студенческих событий</a>
-                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Переключить навигацию" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" runat="server" href="~/">
+                    <i class="fas fa-calendar-alt me-2"></i>Календарь событий
+                </a>
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" 
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
