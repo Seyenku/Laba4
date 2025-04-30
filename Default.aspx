@@ -63,8 +63,16 @@
                                 </div>
                             </EmptyDataTemplate>
                             <ItemTemplate>
-                                <div class="event-item mb-4 p-4 border-start border-4 border-primary rounded-3 shadow-sm event-card" 
-                                     data-event-date='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("yyyy-MM-dd") %>'>
+                                <div class="event-item mb-4 p-4 border-start border-4 border-primary rounded-3 shadow-sm event-card clickable-event" 
+                                     data-event-date='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("yyyy-MM-dd") %>'
+                                     data-event-id='<%# Eval("ID") %>'
+                                     data-event-title='<%# Eval("Title") %>'
+                                     data-event-description='<%# Eval("Description") %>'
+                                     data-event-location='<%# Eval("Location") %>'
+                                     data-event-start='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("dd.MM.yyyy HH:mm") %>'
+                                     data-event-end='<%# DateTime.Parse(Eval("EndDate").ToString()).ToString("dd.MM.yyyy HH:mm") %>'
+                                     data-event-category='<%# Eval("Category") %>'
+                                     data-event-attendees='<%# Eval("CurrentAttendees") %> / <%# Eval("MaxAttendees") %>'>
                                     <div class="row">
                                         <div class="col-md-9">
                                             <h4 class="text-primary fw-bold"><%# Eval("Title") %></h4>
@@ -83,7 +91,7 @@
                                         </div>
                                         <div class="col-md-3 text-end align-self-center">
                                             <asp:LinkButton ID="SelectEventButton" runat="server" 
-                                                CssClass="btn btn-primary btn-hover-effect" 
+                                                CssClass="btn btn-primary btn-hover-effect event-details-btn" 
                                                 CommandName="SelectEvent" 
                                                 CommandArgument='<%# DateTime.Parse(Eval("StartDate").ToString()).ToString("yyyy-MM-dd") + "|" + Eval("ID") %>'>
                                                 <i class="fas fa-info-circle me-2"></i> Подробнее
@@ -98,6 +106,56 @@
             </div>
         </div>
     </main>
+
+    <!-- Модальное окно для просмотра информации о событии -->
+    <div class="modal fade" id="eventDetailsModal" tabindex="-1" aria-labelledby="eventDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="eventDetailsModalLabel">Информация о событии</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-12 mb-4">
+                            <h3 id="modalEventTitle" class="text-primary fw-bold"></h3>
+                            <hr class="colored-hr mt-2 mb-4">
+                        </div>
+                        <div class="col-md-12 mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-align-left me-2 text-muted"></i>Описание</h5>
+                            <p id="modalEventDescription" class="ms-4 mt-2"></p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-calendar-day me-2 text-muted"></i>Дата начала</h5>
+                            <p id="modalEventStart" class="ms-4 mt-2"></p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-calendar-check me-2 text-muted"></i>Дата окончания</h5>
+                            <p id="modalEventEnd" class="ms-4 mt-2"></p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-map-marker-alt me-2 text-muted"></i>Место проведения</h5>
+                            <p id="modalEventLocation" class="ms-4 mt-2"></p>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5 class="fw-bold"><i class="fas fa-tag me-2 text-muted"></i>Категория</h5>
+                            <p id="modalEventCategory" class="ms-4 mt-2"></p>
+                        </div>
+                        <div class="col-md-12">
+                            <h5 class="fw-bold"><i class="fas fa-users me-2 text-muted"></i>Участники</h5>
+                            <p id="modalEventAttendees" class="ms-4 mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <a id="modalMoreDetailsBtn" href="#" class="btn btn-primary">
+                        <i class="fas fa-external-link-alt me-2"></i>Подробнее
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
         .bg-gradient-primary {
@@ -142,7 +200,6 @@
         
         .event-card {
             transition: all 0.3s ease;
-            cursor: default;
             position: relative;
             overflow: hidden;
             background-color: #fff;
@@ -168,6 +225,10 @@
         
         .event-card:hover:before {
             opacity: 1;
+        }
+        
+        .clickable-event {
+            cursor: pointer;
         }
         
         .btn-hover-effect {
@@ -383,6 +444,41 @@
             }
             
             window.addEventListener('scroll', animateOnScroll);
+            
+            // Обработчик клика по событию для открытия модального окна
+            $('.clickable-event').on('click', function(e) {
+                // Проверяем, не был ли клик по кнопке "Подробнее"
+                if (!$(e.target).closest('.event-details-btn').length) {
+                    e.preventDefault();
+                    
+                    // Получаем данные о событии из атрибутов data-*
+                    var eventId = $(this).data('event-id');
+                    var eventDate = $(this).data('event-date');
+                    var eventTitle = $(this).data('event-title');
+                    var eventDescription = $(this).data('event-description');
+                    var eventLocation = $(this).data('event-location');
+                    var eventStart = $(this).data('event-start');
+                    var eventEnd = $(this).data('event-end');
+                    var eventCategory = $(this).data('event-category');
+                    var eventAttendees = $(this).data('event-attendees');
+                    
+                    // Заполняем модальное окно данными
+                    $('#modalEventTitle').text(eventTitle);
+                    $('#modalEventDescription').text(eventDescription);
+                    $('#modalEventStart').text(eventStart);
+                    $('#modalEventEnd').text(eventEnd);
+                    $('#modalEventLocation').text(eventLocation);
+                    $('#modalEventCategory').text(eventCategory);
+                    $('#modalEventAttendees').text(eventAttendees);
+                    
+                    // Настраиваем ссылку "Подробнее"
+                    $('#modalMoreDetailsBtn').attr('href', 'Calendar.aspx?date=' + eventDate + '&eventId=' + eventId);
+                    
+                    // Открываем модальное окно
+                    var eventModal = new bootstrap.Modal(document.getElementById('eventDetailsModal'));
+                    eventModal.show();
+                }
+            });
         });
     </script>
     
