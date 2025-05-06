@@ -217,17 +217,14 @@ namespace Laba4
                         }
                         else
                         {
-                            // If no students are registered, set an empty list
                             AttendeesGridView.DataSource = new List<object>();
                         }
                         
                         AttendeesGridView.DataBind();
                         
-                        // Add event title to the modal
                         ScriptManager.RegisterStartupScript(this, GetType(), "SetModalTitle", 
                             $"document.getElementById('attendeesModalLabel').innerText = 'Участники: {HttpUtility.JavaScriptStringEncode(eventTitle)}';", true);
                         
-                        // Show the modal with Bootstrap 5
                         ScriptManager.RegisterStartupScript(this, GetType(), "ShowModal", 
                             "setTimeout(function() { showAttendeesModal(); }, 100);", true);
                     }
