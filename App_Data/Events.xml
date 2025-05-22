@@ -18,11 +18,13 @@
     <ID>f3cd9451</ID>
     <Title>ывафиы</Title>
     <Description>фываифыи</Description>
-    <StartDate>2025-04-29T19:15:00.0000000</StartDate>
-    <EndDate>2025-04-29T20:15:00.0000000</EndDate>
+    <StartDate>2025-05-16T19:15:00.0000000</StartDate>
+    <EndDate>2025-05-22T20:15:00.0000000</EndDate>
     <Location>фываиывфи</Location>
     <MaxAttendees>50</MaxAttendees>
-    <Attendees />
+    <Attendees>
+      <Student ID="1234" Name="ZZZZ" Email="arasr@sgsgs.sdf" RegistrationDate="2025-05-14T20:23:26.6159425+03:00" />
+    </Attendees>
   </Event>
   <Event>
     <ID>de902e02</ID>

@@ -15,6 +15,24 @@ namespace Laba4
     {
 
         /// <summary>
+        /// DateSearchTextBox элемент управления.
+        /// </summary>
+        /// <remarks>
+        /// Автоматически созданное поле.
+        /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox DateSearchTextBox;
+
+        /// <summary>
+        /// SearchByDateButton элемент управления.
+        /// </summary>
+        /// <remarks>
+        /// Автоматически созданное поле.
+        /// Для изменения переместите объявление поля из файла конструктора в файл кода программной части.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button SearchByDateButton;
+
+        /// <summary>
         /// EventCalendar элемент управления.
         /// </summary>
         /// <remarks>

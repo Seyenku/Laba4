@@ -10,4 +10,13 @@
     <StudentId>1234</StudentId>
     <RegistrationDate>2025-04-29T18:51:55.3802157+03:00</RegistrationDate>
   </User>
+  <User>
+    <ID>7906f195-04d8-4bea-8aa8-9d8230227380</ID>
+    <Username>test</Username>
+    <Email>exxxx@dfjg.ru</Email>
+    <Password>123456</Password>
+    <FullName>AAAAAAA</FullName>
+    <StudentId>378425632487</StudentId>
+    <RegistrationDate>2025-04-30T12:11:44.3695003+03:00</RegistrationDate>
+  </User>
 </Users>

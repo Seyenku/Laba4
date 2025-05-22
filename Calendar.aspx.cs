@@ -9,6 +9,9 @@ using System.Xml.Linq;
 using System.IO;
 using System.Drawing;
 using System.Globalization;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Laba4
 {
@@ -18,9 +21,12 @@ namespace Laba4
         private XDocument eventsDoc;
         private XDocument usersDoc;
         private XElement currentUserElement;
+        private static readonly HttpClient client = new HttpClient();
+        private EventServiceClient eventServiceClient;
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            eventServiceClient = new EventServiceClient("EventServiceEndpoint");
             xmlFilePath = Server.MapPath("~/App_Data/Events.xml");
             string usersFilePath = Server.MapPath("~/App_Data/Users.xml");
             
@@ -37,12 +43,10 @@ namespace Laba4
                 eventsDoc.Save(xmlFilePath);
             }
 
-            // Загружаем данные пользователей, если файл существует
             if (File.Exists(usersFilePath))
             {
                 usersDoc = XDocument.Load(usersFilePath);
 
-                // Если пользователь аутентифицирован, получаем его данные из XML
                 if (Request.IsAuthenticated)
                 {
                     string username = Context.User.Identity.Name;
@@ -53,31 +57,25 @@ namespace Laba4
 
             if (!IsPostBack)
             {
-                // Получаем параметры из URL
                 string dateParam = Request.QueryString["date"];
                 string eventIdParam = Request.QueryString["eventId"];
                 bool registerParam = Request.QueryString["register"] == "true";
                 
                 if (!string.IsNullOrEmpty(dateParam))
                 {
-                    // Устанавливаем дату календаря и выбираем её
                     DateTime selectedDate;
                     if (DateTime.TryParse(dateParam, out selectedDate))
                     {
                         EventCalendar.VisibleDate = selectedDate;
                         EventCalendar.SelectedDate = selectedDate;
                         
-                        // Отображаем события на выбранную дату
                         SelectedDateLabel.Text = selectedDate.ToLongDateString();
                         LoadEventsForSelectedDate(selectedDate);
                         
-                        // Обязательно делаем панель с деталями события видимой
                         EventDetailsPanel.Visible = true;
                         
-                        // Автоматически открываем регистрацию для указанного события
                         if (registerParam && !string.IsNullOrEmpty(eventIdParam))
                         {
-                            // Прокручиваем страницу к форме регистрации
                             ScriptManager.RegisterStartupScript(this, GetType(), "scrollToEvent", 
                                 $"setTimeout(function() {{ document.getElementById('event-{eventIdParam}').scrollIntoView({{ behavior: 'smooth', block: 'center' }}); }}, 500);", 
                                 true);
@@ -88,6 +86,40 @@ namespace Laba4
                 {
                     EventCalendar.VisibleDate = DateTime.Today;
                 }
+            }
+        }
+
+        private async Task<List<EventData>> GetEventsFromService(DateTime date)
+        {
+            try
+            {
+                string formattedDate = date.ToString("dd.MM.yyyy");
+                var events = eventServiceClient.GetEvents(formattedDate);
+                return events.ToList();
+            }
+            catch (Exception ex)
+            {
+                // В случае ошибки возвращаем пустой список
+                return new List<EventData>();
+            }
+        }
+
+        protected async void SearchByDateButton_Click(object sender, EventArgs e)
+        {
+            DateTime selectedDate;
+            if (DateTime.TryParse(DateSearchTextBox.Text, out selectedDate))
+            {
+                var events = await GetEventsFromService(selectedDate);
+                // Сериализуем результат в JSON для передачи в JS
+                string eventsJson = JsonConvert.SerializeObject(events);
+                // Показываем модальное окно с результатами через JS
+                ScriptManager.RegisterStartupScript(this, GetType(), "showEventsModal",
+                    $"showEventsModal({eventsJson});", true);
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "alert",
+                    "alert('Пожалуйста, выберите корректную дату!');", true);
             }
         }
 
@@ -115,14 +147,11 @@ namespace Laba4
                 EventDetailsPanel.Visible = true;
                 NoEventsPanel.Visible = false;
                 
-                // Заполняем поля формы регистрации данными пользователя
                 FillRegistrationForms();
                 
-                // Проверяем, передан ли конкретный идентификатор события в URL
                 string eventIdParam = Request.QueryString["eventId"];
                 if (!string.IsNullOrEmpty(eventIdParam))
                 {
-                    // Добавляем скрипт для выделения выбранного события
                     ScriptManager.RegisterStartupScript(this, GetType(), "highlightEvent", 
                         $"setTimeout(function() {{ " +
                         $"  const eventElement = document.getElementById('event-{eventIdParam}'); " +
@@ -154,31 +183,21 @@ namespace Laba4
 
                 if (eventsOnDay.Any())
                 {
-                    // Отмечаем дни с событиями специальным цветом
                     e.Cell.BackColor = ColorTranslator.FromHtml("#d4edda");
                     
-                    // Показываем количество событий
                     int eventCount = eventsOnDay.Count;
                     e.Cell.Controls.Add(new LiteralControl("<div class='event-count'>" + eventCount + "</div>"));
                     
-                    // Добавляем CSS класс для дополнительных стилей
                     e.Cell.CssClass += " has-events";
                     
-                    // Добавляем подсказку
                     e.Cell.ToolTip = $"События ({eventCount}): Нажмите для просмотра";
                 }
                 else
                 {
-                    // Для дней без событий тоже добавляем подсказку
                     e.Cell.ToolTip = "Нет событий в этот день";
                 }
                 
-                // Добавляем стиль курсора для всех ячеек
                 e.Cell.Attributes["style"] = e.Cell.Attributes["style"] + "; cursor: pointer;";
-                
-                // Делаем ячейку кликабельной с помощью селектора календаря ASP.NET
-                // ВАЖНО: не нужно привязывать обработчик событий JavaScript напрямую,
-                // встроенный селектор дат ASP.NET Calendar сам обрабатывает клики
             }
         }
 
@@ -190,7 +209,6 @@ namespace Laba4
         
         private void FillRegistrationForms()
         {
-            // Если пользователь не аутентифицирован или данные не найдены, выходим
             if (!Request.IsAuthenticated || currentUserElement == null)
                 return;
                 
@@ -202,7 +220,6 @@ namespace Laba4
                 
                 if (nameTextBox != null && idTextBox != null && emailTextBox != null)
                 {
-                    // Заполняем поля данными из профиля пользователя
                     nameTextBox.Text = currentUserElement.Element("FullName")?.Value ?? "";
                     idTextBox.Text = currentUserElement.Element("StudentId")?.Value ?? "";
                     emailTextBox.Text = currentUserElement.Element("Email")?.Value ?? "";
@@ -248,60 +265,61 @@ namespace Laba4
                     return;
                 }
                 
-                int maxAttendees = int.Parse(eventElement.Element("MaxAttendees").Value);
-                int currentAttendees = attendeesElement.Elements("Student").Count();
-                
-                if (currentAttendees >= maxAttendees)
+                if (attendeesElement == null)
                 {
-                    ScriptManager.RegisterStartupScript(this, GetType(), "alert", 
-                        "alert('Извините, это мероприятие уже заполнено.');", true);
-                    return;
+                    attendeesElement = new XElement("Attendees");
+                    eventElement.Add(attendeesElement);
                 }
                 
                 attendeesElement.Add(new XElement("Student",
                     new XAttribute("ID", studentId),
-                    new XAttribute("Name", studentName),
-                    new XAttribute("Email", email),
-                    new XAttribute("RegistrationDate", DateTime.Now.ToString("o"))
+                    new XElement("Name", studentName),
+                    new XElement("Email", email),
+                    new XElement("RegistrationDate", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"))
                 ));
                 
                 eventsDoc.Save(xmlFilePath);
                 
                 ScriptManager.RegisterStartupScript(this, GetType(), "alert", 
-                    "alert('Регистрация успешна! Вы зарегистрированы на это мероприятие.');", true);
+                    "alert('Вы успешно зарегистрированы на мероприятие!');", true);
                 
-                EventCalendar_SelectionChanged(sender, evt);
+                // Обновляем отображение событий
+                LoadEventsForSelectedDate(EventCalendar.SelectedDate);
             }
         }
-
+        
         protected bool IsRegistrationAvailable(object eventId, object maxAttendees)
         {
-            string id = eventId.ToString();
-            int max = Convert.ToInt32(maxAttendees);
-            
+            if (eventId == null || maxAttendees == null)
+                return false;
+                
             XElement eventElement = eventsDoc.Descendants("Event")
-                .FirstOrDefault(e => e.Element("ID").Value == id);
+                .FirstOrDefault(e => e.Element("ID").Value == eventId.ToString());
                 
             if (eventElement == null)
                 return false;
                 
-            int currentAttendees = eventElement.Element("Attendees").Elements("Student").Count();
-            return currentAttendees < max;
+            int maxAttendeesCount = Convert.ToInt32(maxAttendees);
+            int currentAttendeesCount = eventElement.Element("Attendees")?.Elements("Student").Count() ?? 0;
+            
+            return currentAttendeesCount < maxAttendeesCount;
         }
         
         protected string GetAvailableSpots(object maxAttendees, object eventId)
         {
-            int max = Convert.ToInt32(maxAttendees);
-            string id = eventId.ToString();
-            
+            if (eventId == null || maxAttendees == null)
+                return "0";
+                
             XElement eventElement = eventsDoc.Descendants("Event")
-                .FirstOrDefault(e => e.Element("ID").Value == id);
+                .FirstOrDefault(e => e.Element("ID").Value == eventId.ToString());
                 
             if (eventElement == null)
-                return "0 из " + max;
+                return "0";
                 
-            int currentAttendees = eventElement.Element("Attendees").Elements("Student").Count();
-            return (max - currentAttendees) + " из " + max;
+            int maxAttendeesCount = Convert.ToInt32(maxAttendees);
+            int currentAttendeesCount = eventElement.Element("Attendees")?.Elements("Student").Count() ?? 0;
+            
+            return (maxAttendeesCount - currentAttendeesCount).ToString();
         }
     }
 } 

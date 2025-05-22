@@ -1,4 +1,4 @@
-<%@ Page Title="Календарь студенческих событий" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Calendar.aspx.cs" Inherits="Laba4.Calendar" %>
+<%@ Page Title="Календарь студенческих событий" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="Calendar.aspx.cs" Inherits="Laba4.Calendar" Async="true" %>
 
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
     <main>
@@ -6,6 +6,15 @@
             <div class="col-md-12 text-center py-4 mb-4 bg-light rounded-3 shadow-sm hero-section">
                 <h2 class="display-5 fw-bold text-gradient"><i class="fas fa-calendar-alt me-3"></i>Календарь студенческих событий</h2>
                 <p class="lead">Просмотрите предстоящие студенческие мероприятия и зарегистрируйтесь для участия!</p>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 offset-md-3">
+                <div class="input-group">
+                    <asp:TextBox ID="DateSearchTextBox" runat="server" CssClass="form-control" placeholder="Выберите дату" TextMode="Date"></asp:TextBox>
+                    <asp:Button ID="SearchByDateButton" runat="server" CssClass="btn btn-primary" Text="Поиск" OnClick="SearchByDateButton_Click" />
+                </div>
             </div>
         </div>
 
@@ -133,6 +142,24 @@
                 </asp:Panel>
             </div>
         </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="eventsModal" tabindex="-1" aria-labelledby="eventsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="eventsModalLabel">События на выбранную дату</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body" id="eventsModalBody">
+                    <!-- Сюда будут подставляться события -->
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+            </div>
+        </div>
     </main>
 
     <script type="text/javascript">
@@ -162,6 +189,115 @@
                 });
             }
         });
+
+        function showEventsModal(events) {
+            var modalBody = document.getElementById('eventsModalBody');
+            if (!modalBody) return;
+
+            if (!events || events.length === 0) {
+                modalBody.innerHTML = `
+            <div class="alert alert-info">На выбранную дату событий не найдено.</div>
+        `;
+            } else {
+                var html = '';
+                events.forEach(function (event) {
+                    html += `
+                <div class="event-item mb-4 p-3 border rounded-3">
+                    <h5 class="text-primary">${event.Title}</h5>
+                    <p><strong>Время:</strong> ${new Date(event.StartDate).toLocaleTimeString()} - ${new Date(event.EndDate).toLocaleTimeString()}</p>
+                    <p><strong>Место:</strong> ${event.Location}</p>
+                    <p><strong>Описание:</strong> ${event.Description}</p>
+                </div>
+                <hr/>
+            `;
+                });
+                modalBody.innerHTML = html;
+            }
+            var modal = new bootstrap.Modal(document.getElementById('eventsModal'));
+            modal.show();
+        }
+
+        // Функция для получения событий через AJAX
+        function getEventsByDate(date) {
+            var formattedDate = formatDate(date);
+            fetch('EventService.svc/GetEvents?date=' + formattedDate)
+                .then(response => response.json())
+                .then(data => {
+                    updateEventsDisplay(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    showError('Ошибка при загрузке событий');
+                });
+        }
+
+        // Форматирование даты в формат dd.MM.yyyy
+        function formatDate(date) {
+            var day = date.getDate().toString().padStart(2, '0');
+            var month = (date.getMonth() + 1).toString().padStart(2, '0');
+            var year = date.getFullYear();
+            return day + '.' + month + '.' + year;
+        }
+
+        // Обновление отображения событий
+        function updateEventsDisplay(events) {
+            var eventsContainer = document.querySelector('.card-body');
+            if (!eventsContainer) return;
+
+            if (events.length === 0) {
+                eventsContainer.innerHTML = `
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="fas fa-info-circle me-3 fa-2x"></i>
+                        <div>
+                            <h4 class="alert-heading">Нет событий</h4>
+                            <p class="mb-0">На эту дату событий не запланировано.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            var eventsHtml = '';
+            events.forEach(function(event) {
+                eventsHtml += `
+                    <div id="event-${event.ID}" class="event-item mb-4 p-4 rounded-3 border-start border-4 border-primary shadow-sm hover-card">
+                        <h4 class="text-primary fw-bold">${event.Title}</h4>
+                        <div class="row mt-3 mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-2"><i class="fas fa-clock text-secondary me-2"></i> <strong>Время:</strong> ${new Date(event.StartDate).toLocaleTimeString()} - ${new Date(event.EndDate).toLocaleTimeString()}</p>
+                                <p class="mb-2"><i class="fas fa-map-marker-alt text-danger me-2"></i> <strong>Место проведения:</strong> ${event.Location}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><i class="fas fa-users text-success me-2"></i> <strong>Доступные места:</strong> <span class="badge bg-success">${event.MaxAttendees - event.CurrentAttendees}</span></p>
+                                <p class="mb-2"><i class="fas fa-hashtag text-info me-2"></i> <strong>ID события:</strong> <code>${event.ID}</code></p>
+                            </div>
+                        </div>
+                        <div class="card mb-3 bg-light border-0 rounded-3">
+                            <div class="card-body">
+                                <h5 class="card-title text-secondary"><i class="fas fa-info-circle me-2"></i>Описание</h5>
+                                <p class="card-text">${event.Description}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4" />`;
+            });
+
+            eventsContainer.innerHTML = eventsHtml;
+        }
+
+        // Отображение ошибки
+        function showError(message) {
+            var eventsContainer = document.querySelector('.card-body');
+            if (!eventsContainer) return;
+
+            eventsContainer.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center">
+                    <i class="fas fa-exclamation-circle me-3 fa-2x"></i>
+                    <div>
+                        <h4 class="alert-heading">Ошибка</h4>
+                        <p class="mb-0">${message}</p>
+                    </div>
+                </div>`;
+        }
     </script>
 
     <style>
@@ -248,37 +384,21 @@
         
         .calendar-title {
             border-radius: 5px 5px 0 0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
         
-        .selected-day {
-            border-radius: 5px;
-            transform: scale(1.03) !important;
-            box-shadow: 0 5px 20px rgba(44, 115, 210, 0.4) !important;
-            position: relative;
-            z-index: 3;
-            animation: selected-pulse 2s infinite alternate;
-        }
-        
-        .selected-day a, .selected-day a:hover, .selected-day a:visited {
-            color: white !important;
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-        
-        @keyframes selected-pulse {
-            0% {
-                box-shadow: 0 5px 15px rgba(44, 115, 210, 0.4);
-            }
-            100% {
-                box-shadow: 0 5px 25px rgba(44, 115, 210, 0.7);
-            }
-        }
-        
-        .next-prev {
-            padding: 10px;
-            border-radius: 5px;
+        .event-count {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .hover-card {
@@ -287,133 +407,16 @@
         
         .hover-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
         
         .hover-btn {
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
         }
         
         .hover-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .event-count {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background-color: #3498db;
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .today-day {
-            border-radius: 5px;
-            transform: scale(1.02);
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
-        }
-        
-        .today-day a, .today-day a:hover, .today-day a:visited {
-            color: white !important;
-            font-weight: bold;
-        }
-        
-        @media (max-width: 768px) {
-            .hero-section h2 {
-                font-size: 1.8rem;
-            }
-            
-            .hero-section p.lead {
-                font-size: 1rem;
-            }
-            
-            .modern-calendar {
-                font-size: 10pt !important;
-            }
-            
-            .modern-calendar td {
-                padding: 5px !important;
-            }
-            
-            .card-header h3 {
-                font-size: 1.2rem;
-            }
-            
-            .event-item {
-                padding: 1rem !important;
-            }
-            
-            .event-item h4 {
-                font-size: 1.2rem;
-            }
-            
-            .row .col-md-6 {
-                margin-bottom: 1rem;
-            }
-            
-            .col-form-label {
-                padding-bottom: 0.25rem;
-            }
-            
-            .row.mb-3 {
-                margin-bottom: 1rem !important;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .hero-section {
-                padding: 1.5rem 0 !important;
-            }
-            
-            .modern-calendar {
-                font-size: 9pt !important;
-            }
-            
-            .modern-calendar td {
-                padding: 3px !important;
-            }
-            
-            .event-count {
-                width: 18px;
-                height: 18px;
-                font-size: 10px;
-            }
-            
-            .card-body {
-                padding: 0.75rem !important;
-            }
-            
-            .btn {
-                padding: 0.375rem 0.75rem;
-                font-size: 0.9rem;
-            }
-            
-            .col-sm-3 {
-                width: 100%;
-                margin-bottom: 0.25rem;
-            }
-            
-            .col-sm-9 {
-                width: 100%;
-            }
-            
-            .card-header {
-                padding: 0.75rem 1rem !important;
-            }
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
     </style>
 </asp:Content> 
